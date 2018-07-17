@@ -28,10 +28,13 @@ function install() {
 	## packages starred but not installed
 	target_packages=( $(join -v 1 <(get_starred_packages) <(get_installed_packages)) )
 
-	echo "packages to be installed (${#target_packages[@]}):"
-	print_package_names "${target_packages[@]}"
-
-	apm install "${target_packages[@]}"
+	if [ ${#target_packages[@]} -eq 0 ]; then
+		echo "Nothing to install."
+	else
+		echo "Packages to be installed (${#target_packages[@]}):"
+		print_package_names "${target_packages[@]}"
+		apm install "${target_packages[@]}"
+	fi
 }
 
 
@@ -40,10 +43,13 @@ function uninstall() {
 	## packages installed but not starred
 	target_packages=( $(join -v 2 <(get_starred_packages) <(get_installed_packages)) )
 
-	echo "packages to be uninstalled (${#target_packages[@]}):"
-	print_package_names "${target_packages[@]}"
-
-	apm uninstall "${target_packages[@]}"
+	if [ ${#target_packages[@]} -eq 0 ]; then
+		echo "Nothing to uninstall."
+	else
+		echo "Packages to be uninstalled (${#target_packages[@]}):"
+		print_package_names "${target_packages[@]}"
+		apm uninstall "${target_packages[@]}"
+	fi
 }
 
 
@@ -52,10 +58,13 @@ function star() {
 	## packages installed but not starred
 	target_packages=( $(join -v 2 <(get_starred_packages) <(get_installed_packages)) )
 
-	echo "packages to be starred (${#target_packages[@]}):"
-	print_package_names "${target_packages[@]}"
-
-	apm star "${target_packages[@]}"
+	if [ ${#target_packages[@]} -eq 0 ]; then
+		echo "Nothing to star."
+	else
+		echo "Packages to be starred (${#target_packages[@]}):"
+		print_package_names "${target_packages[@]}"
+		apm star "${target_packages[@]}"
+	fi
 }
 
 
@@ -64,10 +73,13 @@ function unstar() {
 	## packages starred but not installed
 	target_packages=( $(join -v 1 <(get_starred_packages) <(get_installed_packages)) )
 
-	echo "packages to be unstarred (${#target_packages[@]}):"
-	print_package_names "${target_packages[@]}"
-
-	apm unstar "${target_packages[@]}"
+	if [ ${#target_packages[@]} -eq 0 ]; then
+		echo "Nothing to unstar."
+	else
+		echo "Packages to be unstarred (${#target_packages[@]}):"
+		print_package_names "${target_packages[@]}"
+		apm unstar "${target_packages[@]}"
+	fi
 }
 
 
@@ -82,14 +94,30 @@ function pull() {
 	## packages not starred but installed
 	target_uninstall=( $(join -v 2 <(echo "$starred_packages") <(echo "$installed_packages")) )
 
-	echo "packages to be installed (${#target_install[@]}):"
-	print_package_names "${target_install[@]}"
+	if [ ${#target_install[@]} -eq 0 ]; then
+		if [ ${#target_uninstall[@]} -eq 0 ]; then
+			echo "Already up-to-date."
+		else
+			echo "Packages to be uninstalled (${#target_uninstall[@]}):"
+			print_package_names "${target_uninstall[@]}"
+		fi
+	else
+		echo "Packages to be installed (${#target_install[@]}):"
+		print_package_names "${target_install[@]}"
 
-	echo "packages to be uninstalled (${#target_uninstall[@]}):"
-	print_package_names "${target_uninstall[@]}"
+		if [ ${#target_uninstall[@]} -gt 0 ]; then
+			echo "Packages to be uninstalled (${#target_uninstall[@]}):"
+			print_package_names "${target_uninstall[@]}"
+		fi
+	fi
 
-	apm install "${target_install[@]}"
-	apm uninstall "${target_uninstall[@]}"
+	if [ ${#target_install[@]} -gt 0 ]; then
+		apm install "${target_install[@]}"
+	fi
+
+	if [ ${#target_uninstall[@]} -gt 0 ]; then
+		apm uninstall "${target_uninstall[@]}"
+	fi
 }
 
 
@@ -104,14 +132,30 @@ function push() {
 	## packages not installed but starred
 	target_unstar=( $(join -v 1 <(echo "$starred_packages") <(echo "$installed_packages")) )
 
-	echo "packages to be starred (${#target_star[@]}):"
-	print_package_names "${target_star[@]}"
+	if [ ${#target_star[@]} -eq 0 ]; then
+		if [ ${#target_unstar[@]} -eq 0 ]; then
+			echo "Already up-to-date."
+		else
+			echo "Packages to be unstarred (${#target_unstar[@]}):"
+			print_package_names "${target_unstar[@]}"
+		fi
+	else
+		echo "Packages to be starred (${#target_star[@]}):"
+		print_package_names "${target_star[@]}"
 
-	echo "packages to be unstarred (${#target_unstar[@]}):"
-	print_package_names "${target_unstar[@]}"
+		if [ ${#target_unstar[@]} -gt 0 ]; then
+			echo "Packages to be unstarred (${#target_unstar[@]}):"
+			print_package_names "${target_unstar[@]}"
+		fi
+	fi
 
-	apm star "${target_star[@]}"
-	apm unstar "${target_unstar[@]}"
+	if [ ${#target_star[@]} -gt 0 ]; then
+		apm star "${target_star[@]}"
+	fi
+
+	if [ ${#target_unstar[@]} -gt 0 ]; then
+		apm unstar "${target_unstar[@]}"
+	fi
 }
 
 
@@ -124,13 +168,13 @@ function status() {
 	only_starred=( $(join -v 1 <(echo "$starred_packages") <(echo "$installed_packages")) )
 	only_installed=( $(join -v 2 <(echo "$starred_packages") <(echo "$installed_packages")) )
 
-	echo "starred and installed (${#synced[@]}):"
+	echo "Starred and installed (${#synced[@]}):"
 	print_package_names "${synced[@]}"
 
-	echo "starred but not installed (${#only_starred[@]}):"
+	echo "Starred but not installed (${#only_starred[@]}):"
 	print_package_names "${only_starred[@]}"
 
-	echo "installed but not starred (${#only_installed[@]}):"
+	echo "Installed but not starred (${#only_installed[@]}):"
 	print_package_names "${only_installed[@]}"
 }
 
