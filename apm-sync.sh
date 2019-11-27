@@ -4,13 +4,34 @@ set -e
 set -u
 
 
+function is_darwin() {
+	if [ "$(uname)" == "Darwin" ]; then
+		return 0
+	else
+		return 1
+	fi
+}
+
+
+function get_col() {
+
+	## Package names are printed in the third column only in darwin(osx)
+	## https://github.com/atom/apm/blob/master/src/stars.coffee#L80
+	if is_darwin; then
+		echo 3
+	else
+		echo 2
+	fi
+}
+
+
 function get_installed_packages() {
 	apm list -i -b | sed -e 's/@.\+$//g' | sed -e '/^\s*$/d' | sort
 }
 
 
 function get_starred_packages() {
-	apm starred --color false | sed -e '1d' | head -n -3 | awk '{ print $2 }' | sed -e '/^\s*$/d' | sort
+	apm starred --color false | sed -e '1d' | head -n -3 | awk -v col=$(get_col) '{ print $col }' | sed -e '/^\s*$/d' | sort
 }
 
 
